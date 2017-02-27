@@ -37,6 +37,8 @@ namespace WindowsFormsApplication1
                 var z = Math.Sqrt(3) / 1.5; //115.4%
             }
 
+
+            //加法定理の証明
             for (var i = 0; i < 360; i++)
             {
                 var rad = i * Math.PI / 180.0;
@@ -58,7 +60,48 @@ namespace WindowsFormsApplication1
                     Console.Write("");
                 }
             }
+
+            //Cos/Sin変換の証明
+            for (var i = 0; i < 360; i++)
+            {
+                var rad = i * Math.PI / 180.0;
+                var b = Math.Sin(rad);
+                var a = Math.Cos((360 + 90 - i) * Math.PI / 180);
+                if (0.01 < Math.Abs(a - b))
+                {
+                    Console.Write("");
+                }
+            }
+
+            //d,q変換で最大角度=60°になるように調節する関数のテスト
+            d = 1.0;
+            q = 0;
+            validation(ref d, ref q);
+
+            d = 0;
+            q = +1;
+            validation(ref d, ref q);
+
+            d = 0;
+            q = -1;
+            validation(ref d, ref q);
+
+            d = 1;
+            q = 1;
+            validation(ref d, ref q);
+
+            d = 1;
+            q = -1;
+            validation(ref d, ref q);
         }
+
+        void validation(ref double d, ref double q)
+        {
+            var _d = Math.Abs(q / Math.Sqrt(3));
+            if (_d > d) d = _d;                     // 進角60°になるよう調整
+        }
+
+
         private void button1_Click(object sender, EventArgs e)
         {
             init();
@@ -150,22 +193,15 @@ namespace WindowsFormsApplication1
         }
         void uvw0(double angle)
         {
-            var rad = angle * Math.PI / 180.0;
-#if true
-#if false
-            //つっかかるような反転(現在)
-            var a = +d * Math.Cos(rad) + q * Math.Sin(rad);
-            var b = -d * Math.Sin(rad) + q * Math.Cos(rad);
-#else
-            //ちゃんとした反転
-            var a = +d * Math.Cos(rad) - q * Math.Sin(rad);
-            var b = -d * Math.Sin(rad) - q * Math.Cos(rad);
-#endif
-#else
-            //合わせた波形(正転)　
-            var a = +d * Math.Cos(rad) - q * Math.Sin(rad);
-            var b = +d * Math.Sin(rad) + q * Math.Cos(rad);
-#endif
+            var vect = (d == 0) ? Math.Abs(q) : d;
+            var adjust = (d != 0) ? 0 : (0 < q) ? 150 : +210;
+            var srad = (angle + adjust) * Math.PI / 180.0;
+            var crad = (90 + angle + adjust) * Math.PI / 180.0;
+
+            //反転
+            var a = +vect * Math.Sin(crad);
+            var b = -vect * Math.Sin(srad);
+
             var u = a;
             var v = (Math.Sqrt(3) * b - a) / 2;
             var w = -(u + v);
@@ -175,22 +211,15 @@ namespace WindowsFormsApplication1
         }
         void uvw1(int angle)
         {
-            var deg = angle * Math.PI / 180.0;
-#if true
-#if false
-            //つっかかるような反転
-            var a0 = (+d * Math.Cos(deg) + q * Math.Sin(deg));
-            var b0 = (-d * Math.Sin(deg) + q * Math.Cos(deg));
-#else
+            var vect = (d == 0) ? Math.Abs(q) : d;
+            var adjust = (d != 0) ? 0 : (0 < q) ? 150 : +210;
+            var sdeg = (angle + adjust) * Math.PI / 180.0;
+            var cdeg = (90 + angle + adjust) * Math.PI / 180.0;
+
             //反転
-            var a0 = (+d * Math.Cos(deg) - q * Math.Sin(deg));
-            var b0 = (-d * Math.Sin(deg) - q * Math.Cos(deg));
-#endif
-#else
-            //正転
-            var a0 = (+d * Math.Cos(deg) - q * Math.Sin(deg));
-            var b0 = (+d * Math.Sin(deg) + q * Math.Cos(deg));
-#endif
+            var a0 = +vect * Math.Sin(cdeg);
+            var b0 = -vect * Math.Sin(sdeg);
+
             var sec = sector(a0, b0);
             var rad0 = sec * 60 * Math.PI / 180.0;
             var a = gain * ((a0 * Math.Cos(rad0) + b0 * Math.Sin(rad0)));        // cosA*cosB + sinA*sinB
